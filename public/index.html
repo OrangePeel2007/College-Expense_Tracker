@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart College Expense Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container glass-panel">
+        <header>
+            <div class="header-content">
+                <i data-lucide="graduation-cap" class="logo-icon"></i>
+                <h1>Smart College Expense Tracker</h1>
+            </div>
+            <div class="summary-cards">
+                <div class="card glass-card">
+                    <h3>Total Balance</h3>
+                    <h2 id="net-savings">₹0.00</h2>
+                </div>
+                <div class="card glass-card income-card">
+                    <h3>Income</h3>
+                    <h2 id="total-income">+₹0.00</h2>
+                </div>
+                <div class="card glass-card expense-card">
+                    <h3>Expenses</h3>
+                    <h2 id="total-expense">-₹0.00</h2>
+                </div>
+            </div>
+            <div id="warning-message" class="warning-banner hidden">
+                <i data-lucide="alert-triangle"></i>
+                <span id="warning-text"></span>
+            </div>
+        </header>
+
+        <main class="grid-layout">
+            <!-- Left Column: Forms -->
+            <div class="column">
+                <div class="form-container glass-card">
+                    <h2><i data-lucide="plus-circle"></i> Add Transaction</h2>
+                    <form id="transaction-form">
+                        <div class="form-group">
+                            <label>Type</label>
+                            <div class="toggle-switch">
+                                <input type="radio" id="type-expense" name="type" value="EXPENSE" checked>
+                                <label for="type-expense" class="expense-label">Expense</label>
+                                <input type="radio" id="type-income" name="type" value="INCOME">
+                                <label for="type-income" class="income-label">Income</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount (₹)</label>
+                            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description (Optional)</label>
+                            <input type="text" id="description" placeholder="What was this for?">
+                        </div>
+                        <button type="submit" class="btn-primary">Save Transaction</button>
+                    </form>
+                </div>
+
+                <div class="form-container glass-card margin-top">
+                    <h2><i data-lucide="target"></i> Set Budget</h2>
+                    <form id="budget-form">
+                        <div class="form-group">
+                            <label for="budget-category">Category</label>
+                            <select id="budget-category" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-amount">Monthly Limit (₹)</label>
+                            <input type="number" id="budget-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <button type="submit" class="btn-secondary">Update Budget</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Data -->
+            <div class="column">
+                <div class="data-section glass-card">
+                    <h2><i data-lucide="bar-chart-2"></i> Spending vs Budget Forecast</h2>
+                    <div style="position: relative; height:250px; width:100%; margin-bottom: 1rem;">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="data-section glass-card margin-top">
+                    <h2><i data-lucide="pie-chart"></i> Smart Budget Summary</h2>
+                    <div id="budget-breakdown" class="budget-list">
+                        <!-- Populated dynamically -->
+                        <div class="empty-state">Loading summary...</div>
+                    </div>
+                </div>
+
+                <div class="data-section glass-card margin-top">
+                    <h2><i data-lucide="list"></i> Recent Transactions</h2>
+                    <div class="transaction-list-container">
+                        <ul id="transaction-list" class="transactions">
+                            <!-- Populated dynamically -->
+                            <div class="empty-state">No transactions yet.</div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
