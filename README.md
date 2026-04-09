@@ -4,9 +4,9 @@ A blazing fast, locally hosted C++ command-line application that acts as a web s
 
 ## How to Start the App
 
-1. Open a terminal and navigate to this folder:
+1. Open a terminal and navigate to the folder where project is saved:
    ```sh
-   cd "/Users/badrinathnandan/Documents/Expense Tracker"
+   cd "/Users/<username>/Expense Tracker"
    ```
 
 2. Start the tracking server:
@@ -23,4 +23,4 @@ A blazing fast, locally hosted C++ command-line application that acts as a web s
 To safely shut down the web server, simply go back to the terminal where the app is running and press:
 **`Ctrl + C`**
 
-This will gracefully terminate the C++ process and stop the website from loading until you start it again. All your transactions and budgets will remain securely saved in your `transactions.csv` and `budgets.csv` files.
+This will terminate the C++ process and stop the website from loading until you start it again. All your transactions and budgets will remain securely saved in your `transactions.csv` and `budgets.csv` files.
