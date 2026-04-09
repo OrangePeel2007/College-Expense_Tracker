@@ -19,3 +19,5 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(TARGET)
+
+#compiles and rebuilds the multiple cpp files present in this project effectively.

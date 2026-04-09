@@ -5,7 +5,9 @@
 #include <sstream>
 #include <ctime>
 
-ExpenseTracker::ExpenseTracker(const std::string& dataFileName, const std::string& budgetFileName)
+//manages transactions, budgets, file persistence and frontend response
+
+ExpenseTracker::ExpenseTracker(const std::string& dataFileName, const std::string& budgetFileName)// constructor
     : nextId(1), dataFile(dataFileName), budgetFile(budgetFileName) {
     loadData();
     loadBudgets();
