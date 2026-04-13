@@ -1,4 +1,215 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let currentUser = null;
+    let currentRole = 'user';
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        let [resource, config] = arguments;
+        if(currentUser) {
+            if(!config) config = {};
+            if(!config.headers) config.headers = {};
+            if (config.headers instanceof Headers) {
+                config.headers.append('x-user-id', currentUser);
+            } else {
+                config.headers['x-user-id'] = currentUser;
+            }
+        }
+        return originalFetch(resource, config);
+    };
+
+    // Users Screen Elements
+    const usersScreen = document.getElementById('users-screen');
+    const appContainer = document.getElementById('app-container');
+    const usersGrid = document.getElementById('users-grid');
+    const authModal = document.getElementById('auth-modal');
+    const authForm = document.getElementById('auth-form');
+    const authUsername = document.getElementById('auth-username');
+    const authMode = document.getElementById('auth-mode');
+    const authPassword = document.getElementById('auth-password');
+    const newUsernameInput = document.getElementById('new-username');
+    const usernameGroup = document.getElementById('username-group');
+    const authTitle = document.getElementById('auth-title');
+    const authError = document.getElementById('auth-error');
+    const authSubmit = document.getElementById('auth-submit');
+    
+    // Switch User functionality
+    document.getElementById('switch-user-btn').addEventListener('click', () => {
+        currentUser = null;
+        currentRole = 'user';
+        document.getElementById('admin-dashboard-btn').classList.add('hidden');
+        const userLabel = document.getElementById('logged-in-user');
+        if (userLabel) userLabel.textContent = '';
+        usersScreen.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+        loadUsersScreen();
+    });
+
+    document.getElementById('auth-cancel').addEventListener('click', () => {
+        authModal.classList.add('hidden');
+    });
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const mode = authMode.value;
+        const pass = authPassword.value;
+        let user = authUsername.value;
+        
+        if (mode === 'login') {
+            try {
+                const res = await originalFetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: user, password: pass})
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    login(user, data.role);
+                } else {
+                    authError.textContent = data.message || 'Login failed';
+                    authError.classList.remove('hidden');
+                }
+            } catch(e) {
+                authError.textContent = 'Network error';
+                authError.classList.remove('hidden');
+            }
+        } else if (mode === 'setup') {
+            // First-time setup: create admin account
+            user = newUsernameInput.value.trim();
+            if (!user) {
+                authError.textContent = 'Username is required';
+                authError.classList.remove('hidden');
+                return;
+            }
+            try {
+                const res = await originalFetch('/api/users/add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: user, password: pass, role: 'admin'})
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    authError.classList.add('hidden');
+                    // Now log in automatically
+                    const loginRes = await originalFetch('/api/login', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username: user, password: pass})
+                    });
+                    const loginData = await loginRes.json();
+                    if (loginRes.ok && loginData.status === 'success') {
+                        login(user, loginData.role);
+                    } else {
+                        // Account created; reload to login normally
+                        authModal.classList.add('hidden');
+                        loadUsersScreen();
+                    }
+                } else {
+                    authError.textContent = data.message || 'Setup failed';
+                    authError.classList.remove('hidden');
+                }
+            } catch(err) {
+                authError.textContent = 'Network error';
+                authError.classList.remove('hidden');
+            }
+        }
+    });
+
+    const adminDashboardBtn = document.getElementById('admin-dashboard-btn');
+
+    function login(user, role) {
+        currentUser = user;
+        currentRole = role || 'user';
+        authModal.classList.add('hidden');
+        usersScreen.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        authPassword.value = '';
+
+        // Show logged-in user in header
+        const userLabel = document.getElementById('logged-in-user');
+        if (userLabel) userLabel.textContent = `👤 ${user}`;
+        
+        if (currentRole === 'admin') {
+            adminDashboardBtn.classList.remove('hidden');
+        } else {
+            adminDashboardBtn.classList.add('hidden');
+        }
+
+        // Clear and reload categories (prevent duplication on user switch)
+        categorySelect.innerHTML = '';
+        budgetCategorySelect.innerHTML = '';
+
+        // Init App for user
+        loadCategories();
+        loadSummary();
+        loadTransactions();
+    }
+
+    async function loadUsersScreen() {
+        usersGrid.innerHTML = '';
+        try {
+            const res = await originalFetch('/api/users');
+            const users = await res.json();
+            
+            if (users.length === 0) {
+                // First-run: no users exist yet — show setup prompt
+                usersGrid.innerHTML = `
+                    <div class="setup-card glass-card" style="text-align:center; padding: 2.5rem 3rem; max-width: 420px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+                        <h2 style="justify-content:center; margin-bottom:0.5rem;">First-Time Setup</h2>
+                        <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">
+                            No accounts found. Create your admin account to get started.
+                        </p>
+                        <button id="setup-admin-btn" class="btn-primary" style="width:auto; padding: 0.75rem 2rem;">
+                            ✨ Create Admin Account
+                        </button>
+                    </div>
+                `;
+                document.getElementById('setup-admin-btn').addEventListener('click', () => {
+                    authMode.value = 'setup';
+                    authUsername.value = '';
+                    authTitle.textContent = 'Create Admin Account';
+                    usernameGroup.style.display = 'block';
+                    newUsernameInput.required = true;
+                    newUsernameInput.placeholder = 'Admin username';
+                    authPassword.value = '';
+                    authError.classList.add('hidden');
+                    authSubmit.textContent = 'Create & Login';
+                    authModal.classList.remove('hidden');
+                });
+                return;
+            }
+
+            users.forEach((item, index) => {
+                const u = typeof item === 'string' ? item : item.username;
+                const r = typeof item === 'string' ? 'user' : item.role;
+                const div = document.createElement('div');
+                div.className = 'user-profile';
+                const gradClass = 'bg-gradient-' + (index % 5);
+                const initial = u.charAt(0).toUpperCase();
+                
+                div.innerHTML = `
+                    <div class="avatar ${gradClass}">${initial}</div>
+                    <span class="user-name">${u}</span>
+                `;
+                
+                div.addEventListener('click', () => {
+                    authMode.value = 'login';
+                    authUsername.value = u;
+                    authTitle.textContent = `Welcome back, ${u}`;
+                    usernameGroup.style.display = 'none';
+                    newUsernameInput.required = false;
+                    authPassword.value = '';
+                    authError.classList.add('hidden');
+                    authSubmit.textContent = 'Login';
+                    authModal.classList.remove('hidden');
+                });
+                usersGrid.appendChild(div);
+            });
+        } catch (e) {
+            console.error('Failed to load users');
+            usersGrid.innerHTML = `<p style="color:var(--danger); text-align:center;">Could not connect to server. Is the app running?</p>`;
+        }
+    }
+
     // DOM Elements
     const form = document.getElementById('transaction-form');
     const budgetForm = document.getElementById('budget-form');
@@ -279,8 +490,136 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Admin Dashboard Logic
+    const adminModal = document.getElementById('admin-modal');
+    const adminUserList = document.getElementById('admin-user-list');
+    const adminAddUserForm = document.getElementById('admin-add-user-form');
+    const adminError = document.getElementById('admin-error');
+
+    adminDashboardBtn?.addEventListener('click', () => {
+        loadAdminUsers();
+        adminModal.classList.remove('hidden');
+    });
+
+    document.getElementById('admin-close')?.addEventListener('click', () => {
+        adminModal.classList.add('hidden');
+    });
+
+    async function loadAdminUsers() {
+        adminUserList.innerHTML = '';
+        try {
+            const res = await originalFetch('/api/users');
+            const users = await res.json();
+            
+            users.forEach(item => {
+                const u = item.username;
+                const r = item.role;
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                
+                li.innerHTML = `
+                    <div class="t-info">
+                        <span class="t-category">${u}</span>
+                        <span class="t-desc">Role: ${r}</span>
+                    </div>
+                    <div class="t-right">
+                        ${u !== 'admin' ? `
+                            <button class="btn-secondary rename-user-btn" data-user="${u}" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; margin-right: 0.5rem;">Rename</button>
+                            <button class="delete-user-btn delete-btn" data-user="${u}">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        ` : '<span class="t-desc" style="color:var(--text-muted)">Super User</span>'}
+                    </div>
+                `;
+                adminUserList.appendChild(li);
+            });
+            lucide.createIcons();
+        } catch (e) {
+            console.error('Failed to load admin users', e);
+        }
+    }
+
+    adminAddUserForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('admin-new-username').value.trim();
+        const password = document.getElementById('admin-new-password').value;
+        const role = document.getElementById('admin-new-role').value;
+
+        if (!username) {
+            adminError.textContent = 'Username cannot be empty';
+            adminError.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            // Use patched fetch so x-user-id header is automatically added
+            const res = await fetch('/api/users/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password, role})
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                adminAddUserForm.reset();
+                adminError.classList.add('hidden');
+                loadAdminUsers();
+                // Refresh user selection screen data in background
+            } else {
+                adminError.textContent = data.message || 'Error creating user';
+                adminError.classList.remove('hidden');
+            }
+        } catch (err) {
+            adminError.textContent = 'Network error';
+            adminError.classList.remove('hidden');
+        }
+    });
+
+    adminUserList?.addEventListener('click', async (e) => {
+        const deleteBtn = e.target.closest('.delete-user-btn');
+        if (deleteBtn) {
+            const user = deleteBtn.getAttribute('data-user');
+            if (confirm(`Are you sure you want to delete user '${user}'? This will delete all their data.`)) {
+                try {
+                    // Use patched fetch so x-user-id header is sent for auth
+                    const res = await fetch(`/api/users/${user}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        loadAdminUsers();
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        alert(data.message || 'Failed to delete user.');
+                    }
+                } catch (err) {
+                    console.error('Network Error', err);
+                }
+            }
+            return;
+        }
+
+        const renameBtn = e.target.closest('.rename-user-btn');
+        if (renameBtn) {
+            const user = renameBtn.getAttribute('data-user');
+            const newName = prompt(`Enter new username for '${user}':`);
+            if (newName && newName.trim() !== '') {
+                try {
+                    // Use patched fetch so x-user-id header is sent for auth
+                    const res = await fetch(`/api/users/${user}/rename`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({newUsername: newName.trim()})
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.status === 'success') {
+                        loadAdminUsers();
+                    } else {
+                        alert(data.message || 'Failed to rename user.');
+                    }
+                } catch (err) {
+                    console.error('Network Error', err);
+                }
+            }
+        }
+    });
+
     // Init
-    loadCategories();
-    loadSummary();
-    loadTransactions();
+    loadUsersScreen();
 });

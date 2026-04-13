@@ -438,3 +438,134 @@ button:hover {
     color: var(--danger);
     transform: scale(1.1);
 }
+
+/* Users Screen (Netflix Style) */
+.users-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background);
+    z-index: 100;
+}
+
+.users-screen.hidden {
+    display: none !important;
+}
+
+.who-title {
+    font-size: 3rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.users-container {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 800px;
+    margin-bottom: 3rem;
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.user-profile:hover {
+    transform: scale(1.1);
+}
+
+.user-profile:hover .user-name {
+    color: #fff;
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    background-color: var(--glass-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.user-profile:hover .avatar {
+    border-color: #fff;
+}
+
+.user-name {
+    margin-top: 1rem;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    transition: color 0.2s ease;
+}
+
+.add-profile-btn {
+    width: auto;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+}
+.add-profile-btn:hover {
+    color: #fff;
+    border-color: #fff;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top:0; left:0; width:100vw; height:100vh;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.modal-content h2 {
+    justify-content: center;
+}
+
+.error-msg {
+    margin-top: 1rem;
+    color: var(--danger);
+    font-size: 0.9rem;
+}
+
+.bg-gradient-0 { background: linear-gradient(135deg, #f12711, #f5af19); }
+.bg-gradient-1 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.bg-gradient-2 { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+.bg-gradient-3 { background: linear-gradient(135deg, #8e2de2, #4a00e0); }
+.bg-gradient-4 { background: linear-gradient(135deg, #2980b9, #6dd5fa); }
+

@@ -15,11 +15,80 @@
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="container glass-panel">
+    <!-- User Selection Screen -->
+    <div id="users-screen" class="users-screen">
+        <h1 class="who-title">Who's tracking?</h1>
+        <div class="users-container" id="users-grid">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <h2 id="auth-title">Enter Password</h2>
+            <form id="auth-form">
+                <input type="hidden" id="auth-username">
+                <input type="hidden" id="auth-mode" value="login">
+                <div class="form-group" id="username-group" style="display:none;">
+                    <input type="text" id="new-username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" placeholder="Password" required>
+                </div>
+                <div id="auth-error" class="error-msg hidden"></div>
+                <button type="submit" class="btn-primary" id="auth-submit">Login</button>
+                <button type="button" class="btn-secondary" style="margin-top:0.5rem;" id="auth-cancel">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="admin-modal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 600px; width: 90%;">
+            <h2><i data-lucide="shield"></i> Admin Dashboard</h2>
+            <div class="admin-section">
+                <h3>Users</h3>
+                <ul id="admin-user-list" class="transactions">
+                    <!-- Populated dynamically -->
+                </ul>
+            </div>
+            <div class="admin-section" style="margin-top: 1rem;">
+                <h3>Add User</h3>
+                <form id="admin-add-user-form">
+                    <div class="form-group">
+                        <input type="text" id="admin-new-username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="admin-new-password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-new-role">Role</label>
+                        <select id="admin-new-role" required>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Create User</button>
+                </form>
+                <div id="admin-error" class="error-msg hidden"></div>
+            </div>
+            <button type="button" class="btn-secondary" style="margin-top:1rem;" id="admin-close">Close</button>
+        </div>
+    </div>
+
+    <div class="container glass-panel hidden" id="app-container">
         <header>
-            <div class="header-content">
-                <i data-lucide="graduation-cap" class="logo-icon"></i>
-                <h1>Smart College Expense Tracker</h1>
+            <div class="header-content" style="justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i data-lucide="graduation-cap" class="logo-icon"></i>
+                    <h1>Smart College Expense Tracker</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span id="logged-in-user" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;"></span>
+                    <button id="admin-dashboard-btn" class="btn-primary hidden" style="width: auto; padding: 0.5rem 1rem;"><i data-lucide="shield"></i> Admin Panel</button>
+                    <button id="switch-user-btn" class="btn-secondary" style="width: auto; padding: 0.5rem 1rem;"><i data-lucide="users"></i> Switch</button>
+                </div>
             </div>
             <div class="summary-cards">
                 <div class="card glass-card">
