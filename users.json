@@ -2,5 +2,9 @@
     "admin": {
         "password": "210706300046",
         "role": "admin"
+    },
+    "rohith r": {
+        "password": "6953986068947",
+        "role": "user"
     }
 }
